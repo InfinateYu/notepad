@@ -28,6 +28,7 @@ public class SecureAccountManager {
 
     private final String ERROR_CONNECTION = "网络错误或账号不存在";
     // 生成盐值
+
     private String generateSalt() {
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[16];
@@ -68,6 +69,7 @@ public class SecureAccountManager {
         return success;
     }
 
+    // 获取账户的盐值
     public String getSalt(String username) {
         try {
             HttpsURLConnection connection = (HttpsURLConnection) new URL(database_url).openConnection();
