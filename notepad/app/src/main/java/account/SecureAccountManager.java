@@ -27,8 +27,8 @@ public class SecureAccountManager {
     private final String database_url = "https://103.40.13.87:50531"; // 待修改
 
     private final String ERROR_CONNECTION = "网络错误或账号不存在";
-    // 生成盐值
 
+    // 生成盐值
     private String generateSalt() {
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[16];
