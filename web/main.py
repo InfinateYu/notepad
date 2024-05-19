@@ -2,13 +2,16 @@
 from flask import Flask
 from flask import request
 
+import sys
 import hashlib
 
-from database import User
+import database as User
 
 app = Flask(__name__)
 
-user_list = {"" : User()}
+user_list = [str]
+
+data_path = ""
 
 # 测试用例
 # 对应的原密码：password
@@ -38,13 +41,14 @@ def login():
             user = request.args.get("username", "")
             pwd = request.args.get("password", "")
             
-            if user in user_list.keys():
+            if user == "" or pwd == "":
+                return {"status" : 15, "description" : "insufficient input"}
+            if user in user_list:
                 return {"status" : 14, "description" : "already login"}
             
             salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
             hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest()
-            login_user = User()
-            code = login_user.login(user=user, pwd=hash_pwd)
+            code = User.login(user=user, pwd=hash_pwd)
 
             if code == User.UKNOWN_ERROR:
                 return {"status" : 13, "description" : "unknown error"}
@@ -53,10 +57,12 @@ def login():
             elif code == User.PASSWORD_ERROR:
                 return {"status" : 12, "description" : "password error"} 
             elif code == User.NO_ERROR:
-                user_list[user] = login_user
-                # 这里要返回账户内容
-    
-                return {"status" : 11, "description" : "login successful", "notes" : login_user.getNotes()}
+                user_list.append(user)
+                notes = User.getNotes()
+                if notes["status"] == User.NO_ERROR:
+                    return {"status" : 11, "description" : "login successful", "notes" : notes["notes"]}
+                else:
+                    return {"status" : 13, "description" : "unknown error"}
         else:
             return {"status" : 13, "description" : "request error"}
                 
@@ -65,11 +71,10 @@ def login():
 
 
 # 用于用户注册
-# 未完成
 # params = {username : user, password : pwd}
 @app.route("/register", methods=["POST"])
 def register():
-    global user_list
+    global data_path
     try:
         if request.method == "POST":
             user = request.args.get("username", "")
@@ -78,8 +83,7 @@ def register():
             salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
             hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest()
 
-            register_user = User()
-            code = register_user.register(user=user, pwd=hash_pwd)
+            code = User.register(user=user, pwd=hash_pwd, path=data_path)
 
             if code == User.UKNOWN_ERROR:
                 return {"status" : 13, "description" : "unknown error"}
@@ -99,10 +103,49 @@ def register():
 
 # 用于笔记保存
 # 未完成
+# param = {username : user, note : {"title" : "", "tags" : [str], "content" : [str]}}
 @app.route("/save", methods=["POST"])
 def save():
     pass
 
 
+# 用于删除笔记
+# 未完成
+# param = {username : user, title : ""}
+@app.route("/delnote", methods=["POST"])
+def deletNote():
+    pass
+
+
+# 用于删除用户
+# 未完成
+# param = {username : user}
+@app.route("/deluser", methods=["POST"])
+def deleteUser():
+    # 需要删除数据库记录和本地的库
+    global user_list, data_path
+    try:
+        if request.method == "POST":
+            user = request.args.get("username", "")
+            
+            if user in user_list:
+                code = User.deleteUser(username=user)
+
+                if code == User.UKNOWN_ERROR:
+                    return {"status" : 13, "description" : "unknown error"}
+                elif code == User.NULL_INPUT_ERROR:
+                    return {"status" : 15, "description" : "insufficient input"}
+                elif code == User.NO_ERROR:
+                    user_list.remove(user)
+                    return {"status" : 16, "description" : "close account successful"}
+                else:
+                    return {"status" : 14, "description" : "login status error"}
+        else:
+            return {"status" : 13, "description" : "request error"}
+    except:
+        return {"status" : 13, "description" : "connect error"}
+
+
 if __name__ == '__main__':
+    data_path = sys.argv[0].replace("main.py", "data/").replace("\\", "/")
     app.run(debug=True, host="0.0.0.0")
