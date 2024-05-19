@@ -9,7 +9,7 @@ import database as User
 
 app = Flask(__name__)
 
-user_list = [str]
+user_list = []
 
 data_path = ""
 
@@ -31,7 +31,6 @@ def test():
 
 
 # 用于用户登录
-# 未完成（返回笔记）
 # params = {username : user, password : pwd}
 @app.route("/login", methods=["GET"])
 def login():
@@ -58,7 +57,7 @@ def login():
                 return {"status" : 12, "description" : "password error"} 
             elif code == User.NO_ERROR:
                 user_list.append(user)
-                notes = User.getNotes()
+                notes = User.getNotes(user)
                 if notes["status"] == User.NO_ERROR:
                     return {"status" : 11, "description" : "login successful", "notes" : notes["notes"]}
                 else:

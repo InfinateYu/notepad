@@ -131,7 +131,7 @@ def saveNote(username: str, notename: str):
 # TODO:解决bug（目前还有）
 def getNotes(username: str) -> dict:
     code = UKNOWN_ERROR
-    notes = [dict[str]]
+    notes = []
 
     # 先处理空白输入
     if username == "":
@@ -169,10 +169,10 @@ def getNotes(username: str) -> dict:
                     note["title"] = file.read()
 
                 with open(tags_file) as file:
-                    note["tags"] = file.readlines().copy()
+                    note["tags"] = file.read().splitlines()
 
                 with open(content_file) as file:
-                    note["content"] = file.readlines().copy()
+                    note["content"] = file.read().splitlines()
 
                 notes.append(note)
 
