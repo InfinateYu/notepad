@@ -8,36 +8,42 @@ from database import User
 
 app = Flask(__name__)
 
+user_list = {"" : User()}
 
 # 测试用例
 # 对应的原密码：password
 # 加密方式：sha256+盐，盐：密码串的反转的md5
-user_list = {"user" : "356431046888a65fcb078e3151f78d8b5678392bb1a8514139475c939f233cd7"}
+# user_list = {"user" : "356431046888a65fcb078e3151f78d8b5678392bb1a8514139475c939f233cd7"}
 
-login_user: User
-
+# status code:
+# 10用户名错误 11成功
+# 12密码错误 13连接或请求错误等
+# 14状态错误 15缺少输入（注册）
+# 16已存在用户名 17注册成功
 
 # 一个测试接口
-@app.route("/test", methods=["GET"])
+@app.route("/test")
 def test():
     return "connect successful"
 
 
 # 用于用户登录
-# 未完成
+# 未完成（返回笔记）
 # params = {username : user, password : pwd}
-# status code: 10用户名错误 11成功 12密码错误 13连接错误或其他错误
 @app.route("/login", methods=["GET"])
 def login():
-    global login_user
+    global user_list
     try:
         if request.method == "GET":
             user = request.args.get("username", "")
             pwd = request.args.get("password", "")
             
+            if user in user_list.keys():
+                return {"status" : 14, "description" : "already login"}
+            
             salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
             hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest()
-
+            login_user = User()
             code = login_user.login(user=user, pwd=hash_pwd)
 
             if code == User.UKNOWN_ERROR:
@@ -47,13 +53,15 @@ def login():
             elif code == User.PASSWORD_ERROR:
                 return {"status" : 12, "description" : "password error"} 
             elif code == User.NO_ERROR:
+                user_list[user] = login_user
                 # 这里要返回账户内容
     
                 return {"status" : 11, "description" : "login successful", "notes" : login_user.getNotes()}
-
+        else:
+            return {"status" : 13, "description" : "request error"}
                 
     except:
-        return {"status" : 13, "description" : "request error"}
+        return {"status" : 13, "description" : "connect error"}
 
 
 # 用于用户注册
@@ -61,7 +69,32 @@ def login():
 # params = {username : user, password : pwd}
 @app.route("/register", methods=["POST"])
 def register():
-    pass
+    global user_list
+    try:
+        if request.method == "POST":
+            user = request.args.get("username", "")
+            pwd = request.args.get("password", "")
+
+            salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
+            hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest()
+
+            register_user = User()
+            code = register_user.register(user=user, pwd=hash_pwd)
+
+            if code == User.UKNOWN_ERROR:
+                return {"status" : 13, "description" : "unknown error"}
+            elif code == User.NULL_INPUT_ERROR:
+                return {"status" : 15, "description" : "insufficient input"}
+            elif code == User.EXIST_NAME_ERROR:
+                return {"status" : 16, "description" : "exist username"}
+            elif code == User.NO_ERROR:
+                return {"status" : 16, "description" : "register successful"}
+            else:
+                return {"status" : 14, "description" : "login status error"}
+        else:
+            return {"status" : 13, "description" : "request error"}
+    except:
+        return {"status" : 13, "description" : "connect error"}
 
 
 # 用于笔记保存
@@ -72,5 +105,4 @@ def save():
 
 
 if __name__ == '__main__':
-    login_user = User()
     app.run(debug=True, host="0.0.0.0")

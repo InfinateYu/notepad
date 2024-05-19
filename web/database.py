@@ -5,6 +5,7 @@ class User:
     """
     与数据库直接连接的接口
     """
+    
     # 登录状态
     STATUS_NOT_LOGGED = False
     STATUS_LOGGED = True
@@ -30,11 +31,10 @@ class User:
         if self.login_status == User.STATUS_NOT_LOGGED:
             db = MySQLdb.connect("localhost", "root", "1234567890", "notepad", charset="utf8")
             cursor = db.cursor()
-            judge_login = "SELECT * FROM users WHERE username = \"" + user + "\";"
             try:
                 # 执行sql语句
+                judge_login = "SELECT * FROM users WHERE username = \"" + user + "\";"
                 cursor.execute(judge_login)
-
                 result = cursor.fetchone()
                 if result == None:
                     code = User.USERNAME_ERROR
@@ -56,7 +56,7 @@ class User:
 
     # 更新用户数据（注册）
     # 未完成
-    def updateUsers(self, user: str, pwd: str) -> int:
+    def register(self, user: str, pwd: str) -> int:
         code = User.UKNOWN_ERROR
         if self.login_status == User.STATUS_NOT_LOGGED:
             # 先处理空白输入
@@ -65,21 +65,22 @@ class User:
             
             db = MySQLdb.connect("localhost", "root", "1234567890", "notepad", charset="utf8")
             cursor = db.cursor()
-            judge_login = "SELECT * FROM users WHERE username = \"" + user + "\";"
             try:
                 # 执行sql语句
-                cursor.execute(judge_login)
-
+                judge_username = "SELECT username FROM users WHERE username = \"" + user + "\";"
+                cursor.execute(judge_username)
                 result = cursor.fetchone()
-                if result == None:
-                    code = User.USERNAME_ERROR
+                if result != None:
+                    code = User.EXIST_NAME_ERROR
                 else:
-                    if pwd == result[1]:
-                        self.login_status = User.STATUS_LOGGED
-                        self.user = user
+                    try:
+                        reg = "INSERT INTO users \
+                               VALUES (\"" + user + "\", \"" + pwd + "\")" 
+                        cursor.execute(reg)
+                        db.commit()
                         code = User.NO_ERROR
-                    else:
-                        code = User.PASSWORD_ERROR
+                    except:
+                        db.rollback()
             except:
                 db.rollback()
             finally:
@@ -96,17 +97,11 @@ class User:
 
     # 获取所有笔记
     def getNotes(self) -> list[dict[str]]:
-        note = self.note_template.copy()
-        
-        # 从数据库获取数据
+        if self.login_status == User.STATUS_LOGGED:
+            note = self.note_template.copy()
+            
+            # 从数据库获取数据
 
-        return [note]
-
-
-    # 获取指定笔记
-    def getNote(self, title: str) -> dict[str]:
-        note = self.note_template.copy()
-        
-        # 从数据库获取数据
-
-        return note
+            return [note]
+        else:
+            return []
