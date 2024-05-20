@@ -4,6 +4,7 @@ from flask import request
 
 import os
 import sys
+import json
 import shutil
 import hashlib
 
@@ -14,6 +15,8 @@ app = Flask(__name__)
 user_list = []
 
 data_path = ""
+
+# title = "b'5L2/55So6K+05piO'"
 
 # 测试用例
 # 对应的原密码：password
@@ -27,9 +30,9 @@ data_path = ""
 # 16已存在用户名 17注册成功
 
 # 一个测试接口
-@app.route("/test")
+@app.route("/test", methods=["GET", "POST"])
 def test():
-    return "connect successful"
+    return request.json["content"][0]
 
 
 # 用于用户登录
@@ -72,6 +75,27 @@ def login():
         return {"status" : 13, "description" : "connect error"}
 
 
+# 退出登录
+# param = {username : user}
+@app.route("/logout", methods=["POST"])
+def logout():
+    global user_list
+    try:
+        if request.method == "POST":
+            user = request.args.get("username", "")
+        
+        if user == "":
+                return {"status" : 15, "description" : "insufficient input"}
+        
+        if user in user_list:
+            user_list.remove(user)
+            return {"status" : 11, "description" : "logout successful"}
+        else:
+            return {"status" : 14, "description" : "not logged in"}
+    except:
+        return {"status" : 13, "description" : "connect error"}
+    
+
 # 用于用户注册
 # params = {username : user, password : pwd}
 @app.route("/register", methods=["POST"])
@@ -101,7 +125,7 @@ def register():
                     shutil.copy(src=data_path + "default/profile/profile.dat", dst=user_path + "/profile")
                     shutil.copy(src=data_path + "default/notes/note1/tags.dat", dst=user_path + "/notes/note1")
                     shutil.copy(src=data_path + "default/notes/note1/content.dat", dst=user_path + "/notes/note1")
-                return {"status" : 16, "description" : "register successful"}
+                return {"status" : 17, "description" : "register successful"}
             else:
                 return {"status" : 14, "description" : "login status error"}
         else:
@@ -110,12 +134,48 @@ def register():
         return {"status" : 13, "description" : "connect error"}
 
 
-# 用于笔记保存
+# 用于笔记保存（内容）
 # 未完成
-# param = {username : user, note : {"title" : "", "tags" : [str], "content" : [str]}}
+# param = {username : user}
+# json = {title : title, content : []}
 @app.route("/save", methods=["POST"])
 def save():
-    pass
+    global user_list
+    try:
+        if request.method == "POST":
+            user = request.args.get("username", "")
+            title = request.json["title"]
+            content = request.json["content"]
+
+            if user == "" or title == "":
+                return {"status" : 15, "description" : "insufficient input"}
+            if user not in user_list:
+                return {"status" : 14, "description" : "not logged in"}
+            
+            info = User.saveNote(username=user, title=title)
+
+            if info["status"] == User.UKNOWN_ERROR:
+                return {"status" : 13, "description" : "unknown error"}
+            elif info["status"] == User.EXIST_ERROR:
+                return {"status" : 13, "description" : "exist error"}
+            elif info["status"] == User.NULL_INPUT_ERROR:
+                return {"status" : 15, "description" : "insufficient input"}
+            elif info["status"] == User.NO_ERROR:
+                # 更新本地存储
+                path = info["path"]
+
+                if os.path.exists(path):
+                    with open(path, "wb") as file:
+                        for para in content:
+                            file.write((para + "\n").encode())
+                    return {"status" : 11, "description" : "save successful"}
+                else:
+                    return {"status" : 13, "description" : "unknown error"}
+            else:
+                    return {"status" : 13, "description" : "unknown error"}
+
+    except:
+        return {"status" : 13, "description" : "connect error"}
 
 
 # 用于删除笔记
