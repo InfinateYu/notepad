@@ -76,7 +76,6 @@ def login():
 # params = {username : user, password : pwd}
 @app.route("/register", methods=["POST"])
 def register():
-    global data_path
     try:
         if request.method == "POST":
             user = request.args.get("username", "")
@@ -97,9 +96,11 @@ def register():
                 # 建立本地数据存储
                 user_path = data_path + "user_" + user
                 if not os.path.exists(user_path):
-                    os.makedirs(user_path + "/notes")
+                    os.makedirs(user_path + "/notes/note1")
                     os.makedirs(user_path + "/profile")
                     shutil.copy(src=data_path + "default/profile/profile.dat", dst=user_path + "/profile")
+                    shutil.copy(src=data_path + "default/notes/note1/tags.dat", dst=user_path + "/notes/note1")
+                    shutil.copy(src=data_path + "default/notes/note1/content.dat", dst=user_path + "/notes/note1")
                 return {"status" : 16, "description" : "register successful"}
             else:
                 return {"status" : 14, "description" : "login status error"}
@@ -141,7 +142,7 @@ def updateUser():
 @app.route("/deluser", methods=["DELETE"])
 def deleteUser():
     # 需要删除数据库记录和本地的库
-    global user_list, data_path
+    global user_list
     try:
         if request.method == "DELETE":
             user = request.args.get("username", "")

@@ -11,6 +11,7 @@ NULL_INPUT_ERROR = 105 # 空白输入
 
 note_template = {"title" : "", "tags" : [str], "content" : [str]} # 笔记文件的模板，其中均为加密后信息
 
+default_title = "b'5L2/55So6K+05piO'"
 
 # 用户登录
 def login(user: str, pwd: str) -> int:
@@ -69,7 +70,9 @@ def register(user: str, pwd: str, path: str) -> int:
                         id INT AUTO_INCREMENT PRIMARY KEY, \
                         title VARCHAR(200) NOT NULL UNIQUE \
                         )"
+                copy_note = "INSERT INTO " + user + "_notes (title) VALUES (\"" + default_title + "\")"
                 cursor.execute(reg)
+                cursor.execute(copy_note)
                 db.commit()
                 code = NO_ERROR
             except:
