@@ -83,30 +83,26 @@ def register(user: str, pwd: str, path: str) -> int:
 
 # 删除用户信息
 def deleteUser(username: str) -> int:
-    code = UKNOWN_ERROR
-
     # 先处理空白输入
     if username == "":
         return NULL_INPUT_ERROR
     
+    code = UKNOWN_ERROR
+
     db = MySQLdb.connect("localhost", "root", "1234567890", "notepad", charset="utf8")
     cursor = db.cursor()
     try:
         # 执行sql语句
-        judge_username = "SELECT username FROM users WHERE username = \"" + username + "\";"
+        judge_username = "SELECT * FROM users WHERE username = \"" + username + "\";"
         cursor.execute(judge_username)
         result = cursor.fetchone()
-        if result == None:
-            code = UKNOWN_ERROR
-        else:
-            try:
-                del_sql = "DELETE FROM users WHERE username = \"" + username + "\"; \
-                           DROP TABLE " + username + "_notes;"
-                cursor.execute(del_sql)
-                db.commit()
-                code = NO_ERROR
-            except:
-                db.rollback()
+        if result != None:
+            del_sql1 = "DELETE FROM users WHERE username = \"" + username + "\""
+            del_sql2 = "DROP TABLE " + username + "_notes"
+            cursor.execute(del_sql1)
+            cursor.execute(del_sql2)
+            db.commit()
+            code = NO_ERROR
     except:
         db.rollback()
     finally:
@@ -188,12 +184,10 @@ def getNotes(username: str) -> dict:
                 note = note_template.copy()
                 id = str(res[0])
                 res_path = path + "/notes/note" + id + "/"
-                title_file = res_path + "title.dat"
                 tags_file = res_path + "tags.dat"
                 content_file = res_path + "content.dat"
 
-                with open(title_file) as file:
-                    note["title"] = file.read()
+                note["title"] = res[1]
 
                 with open(tags_file) as file:
                     note["tags"] = file.read().splitlines()

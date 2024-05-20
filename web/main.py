@@ -2,8 +2,9 @@
 from flask import Flask
 from flask import request
 
+import os
 import sys
-import base64
+import shutil
 import hashlib
 
 import database as User
@@ -93,6 +94,12 @@ def register():
             elif code == User.EXIST_NAME_ERROR:
                 return {"status" : 16, "description" : "exist username"}
             elif code == User.NO_ERROR:
+                # 建立本地数据存储
+                user_path = data_path + "user_" + user
+                if not os.path.exists(user_path):
+                    os.makedirs(user_path + "/notes")
+                    os.makedirs(user_path + "/profile")
+                    shutil.copy(src=data_path + "default/profile/profile.dat", dst=user_path + "/profile")
                 return {"status" : 16, "description" : "register successful"}
             else:
                 return {"status" : 14, "description" : "login status error"}
@@ -130,14 +137,13 @@ def updateUser():
 
 
 # 用于删除用户
-# 未完成
 # param = {username : user}
-@app.route("/deluser", methods=["POST"])
+@app.route("/deluser", methods=["DELETE"])
 def deleteUser():
     # 需要删除数据库记录和本地的库
     global user_list, data_path
     try:
-        if request.method == "POST":
+        if request.method == "DELETE":
             user = request.args.get("username", "")
             
             if user in user_list:
@@ -148,10 +154,15 @@ def deleteUser():
                 elif code == User.NULL_INPUT_ERROR:
                     return {"status" : 15, "description" : "insufficient input"}
                 elif code == User.NO_ERROR:
+                    user_path = data_path + "user_" + user
+                    if os.path.exists(user_path):
+                        shutil.rmtree(user_path)
                     user_list.remove(user)
                     return {"status" : 16, "description" : "close account successful"}
                 else:
                     return {"status" : 14, "description" : "login status error"}
+            else:
+                return {"status" : 10, "description" : "invalid username"}
         else:
             return {"status" : 13, "description" : "request error"}
     except:
