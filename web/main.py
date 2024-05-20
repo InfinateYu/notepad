@@ -3,6 +3,7 @@ from flask import Flask
 from flask import request
 
 import sys
+import base64
 import hashlib
 
 import database as User
@@ -57,9 +58,10 @@ def login():
                 return {"status" : 12, "description" : "password error"} 
             elif code == User.NO_ERROR:
                 user_list.append(user)
+                info = User.getInfo(user)
                 notes = User.getNotes(user)
-                if notes["status"] == User.NO_ERROR:
-                    return {"status" : 11, "description" : "login successful", "notes" : notes["notes"]}
+                if info["status"] == User.NO_ERROR and notes["status"] == User.NO_ERROR:
+                    return {"status" : 11, "description" : "login successful", "nickname" : info["nickname"], "profile" : info["profile"], "notes" : notes["notes"]}
                 else:
                     return {"status" : 13, "description" : "unknown error"}
         else:
@@ -112,7 +114,18 @@ def save():
 # 未完成
 # param = {username : user, title : ""}
 @app.route("/delnote", methods=["POST"])
-def deletNote():
+def deleteNote():
+    pass
+
+
+
+# 用于更新用户信息
+# 未完成
+# param = {username : user}
+# data
+@app.route("/upduser", methods=["POST"])
+def updateUser():
+    # request.form["profile"]
     pass
 
 

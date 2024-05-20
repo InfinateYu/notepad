@@ -1,8 +1,5 @@
+# 与数据库直接连接的接口
 import MySQLdb
-
-"""
-与数据库直接连接的接口
-"""
 
 # 错误类型
 NO_ERROR = 100 # 无错误
@@ -117,18 +114,48 @@ def deleteUser(username: str) -> int:
         return code
 
 
-# 删除笔记
-def deleteNotes(username: str, titles: list[str]) -> int:
-    pass
+# 获取用户信息
+def getInfo(username: str) -> dict:
+    code = UKNOWN_ERROR
 
+    nickname = ""
+    profile = ""
 
-# 保存笔记(
-def saveNote(username: str, notename: str):
-    pass
+    # 先处理空白输入
+    if username == "":
+        return NULL_INPUT_ERROR
+    
+    # 从数据库获取数据
+    db = MySQLdb.connect("localhost", "root", "1234567890", "notepad", charset="utf8")
+    cursor = db.cursor()
+    try:
+        # 执行sql语句
+        judge_username = "SELECT * FROM users WHERE username = \"" + username + "\";"
+        cursor.execute(judge_username)
+        result = cursor.fetchone()
 
+        if result == None:
+            code = UKNOWN_ERROR
+        else:
+            # 昵称
+            nickname = result[2]
+
+            # 获取路径
+            path = result[3]
+            res_file = path + "/profile/profile.dat"
+
+            with open(res_file, "r") as file:
+                profile = file.read()
+
+            code = NO_ERROR
+    except:
+        db.rollback()
+    finally:
+        db.close()
+        return {"status" : code, "nickname" : nickname, "profile" : profile}
+    
 
 # 获取所有笔记
-# TODO:解决bug（目前还有）
 def getNotes(username: str) -> dict:
     code = UKNOWN_ERROR
     notes = []
@@ -182,3 +209,14 @@ def getNotes(username: str) -> dict:
     finally:
         db.close()
         return {"status" : code, "notes" : notes}
+    
+
+# 删除笔记
+def deleteNotes(username: str, titles: list[str]) -> int:
+    pass
+
+
+# 保存笔记(
+def saveNote(username: str, notename: str):
+    pass
+
