@@ -187,7 +187,6 @@ def save():
 
 
 # 用于删除笔记
-# 未完成
 # param = {username : user, title : title}
 @app.route("/delnote", methods=["DELETE"])
 def deleteNote():
