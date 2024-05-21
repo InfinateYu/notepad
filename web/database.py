@@ -157,6 +157,11 @@ def getInfo(username: str) -> dict:
         return {"status" : code, "nickname" : nickname, "profile" : profile}
     
 
+# 更新用户信息（昵称）
+def updateInfo(username: str, nickname: str) -> dict:
+    pass
+
+
 # 获取所有笔记
 def getNotes(username: str) -> dict:
     code = UKNOWN_ERROR
@@ -197,10 +202,16 @@ def getNotes(username: str) -> dict:
                 note["time"] = res[2]
 
                 with open(tags_file) as file:
-                    note["tags"] = file.read().splitlines()
+                    tags = []
+                    for line in file.readlines():
+                        tags.append(line.rstrip("\n"))
+                    note["tags"] = tags.copy()
 
                 with open(content_file) as file:
-                    note["content"] = file.read().splitlines()
+                    content = []
+                    for line in file.readlines():
+                        content.append(line.rstrip("\n"))
+                    note["content"] = content.copy()
 
                 notes.append(note)
 
@@ -213,18 +224,60 @@ def getNotes(username: str) -> dict:
     
 
 # 删除笔记
-def deleteNotes(username: str, titles: list[str]) -> int:
-    pass
-
-
-# 保存笔记(内容）
-def saveNote(username: str, title: str) -> dict:
+def deleteNote(username: str, title: str) -> dict:
     code = UKNOWN_ERROR
     res_path = ""
 
     # 先处理空白输入
     if username == "":
-        return NULL_INPUT_ERROR
+        return {"status" : NULL_INPUT_ERROR, "path" : res_path}
+    
+    # 从数据库获取数据
+    db = MySQLdb.connect("localhost", "root", "1234567890", "notepad", charset="utf8")
+    cursor = db.cursor()
+    try:
+        # 执行sql语句
+        judge_username = "SELECT * FROM users WHERE username = \"" + username + "\""
+        cursor.execute(judge_username)
+        result = cursor.fetchone()
+
+        if result != None: 
+            note_lib = username + "_notes"
+            # 获取路径
+            path = result[3]
+
+            # 执行sql语句（获取文件信息）
+            find_note = "SELECT * FROM " + note_lib + " WHERE title = \"" + title + "\""
+            cursor.execute(find_note)
+            note_res = cursor.fetchone()
+
+            if note_res != None:
+                id = str(note_res[0])
+                res_path = path + "/notes/note" + id
+
+                # 删除
+                del_sql = "DELETE FROM " + note_lib + " WHERE title = \"" + title + "\""
+                cursor.execute(del_sql)
+                db.commit()
+
+                code = NO_ERROR
+            else:
+                code = EXIST_ERROR
+    except:
+        db.rollback()
+    finally:
+        db.close()
+        return {"status" : code, "path" : res_path}
+
+
+# 保存笔记
+def saveNote(username: str, title: str, new_title: str = "") -> dict:
+    code = UKNOWN_ERROR
+    res_path = ""
+
+    # 先处理空白输入
+    if username == "":
+        return {"status" : NULL_INPUT_ERROR, "path" : res_path}
         
     # 从数据库获取数据
     db = MySQLdb.connect("localhost", "root", "1234567890", "notepad", charset="utf8")
@@ -247,23 +300,35 @@ def saveNote(username: str, title: str) -> dict:
 
             if note_res != None:
                 id = str(note_res[0])
-                res_path = path + "/notes/note" + id + "/content.dat"
+                res_path = path + "/notes/note" + id
 
                 # 更新日期
                 upd_sql = "UPDATE " + note_lib + " SET date = NOW() WHERE title = \"" + title + "\""
+                # 更新标题
+                if new_title != "" and new_title != title:
+                    # 更新标题
+                    upd_sql = "UPDATE " + note_lib + " SET title = \"" + new_title + "\" WHERE title = \"" + title + "\""
+                
                 cursor.execute(upd_sql)
                 db.commit()
 
                 code = NO_ERROR
             else:
-                code = EXIST_ERROR
+                # 新创建
+                crt_sql = "INSERT INTO " + note_lib + " (title) VALUES (\"" + title + "\")"
+                cursor.execute(crt_sql)
+                db.commit()
+                find = "SELECT * FROM " + note_lib + " WHERE title = \"" + title + "\""
+                cursor.execute(find)
+                note_res = cursor.fetchone()
+                id = str(note_res[0])
+                res_path = path + "/notes/note" + id
+
+                code = NO_ERROR
+
     except:
         db.rollback()
     finally:
         db.close()
         return {"status" : code, "path" : res_path}
 
-
-# 更新笔记信息（题目，标签）
-def updNoteInfo(username: str, title: str, new_title: str, new_tags: list, type: int = 0) -> int:
-    pass

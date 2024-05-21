@@ -32,7 +32,7 @@ data_path = ""
 # 一个测试接口
 @app.route("/test", methods=["GET", "POST"])
 def test():
-    return request.json["content"][0]
+    return  request.json
 
 
 # 用于用户登录
@@ -134,25 +134,26 @@ def register():
         return {"status" : 13, "description" : "connect error"}
 
 
-# 用于笔记保存（内容）
-# 未完成
+# 用于笔记保存
 # param = {username : user}
-# json = {title : title, content : []}
+# json = {title : title, (可选)new_title : new_title, tags : [tags], content : [content]}
 @app.route("/save", methods=["POST"])
 def save():
     global user_list
     try:
         if request.method == "POST":
             user = request.args.get("username", "")
-            title = request.json["title"]
-            content = request.json["content"]
+            title = request.json.get("title", "")
+            new_title = request.json.get("new_title", "")
+            tags = request.json.get("tags", [])
+            content = request.json.get("content", [])
 
             if user == "" or title == "":
                 return {"status" : 15, "description" : "insufficient input"}
             if user not in user_list:
                 return {"status" : 14, "description" : "not logged in"}
             
-            info = User.saveNote(username=user, title=title)
+            info = User.saveNote(username=user, title=title, new_title=new_title)
 
             if info["status"] == User.UKNOWN_ERROR:
                 return {"status" : 13, "description" : "unknown error"}
@@ -164,11 +165,58 @@ def save():
                 # 更新本地存储
                 path = info["path"]
 
-                if os.path.exists(path):
-                    with open(path, "wb") as file:
-                        for para in content:
-                            file.write((para + "\n").encode())
+                if not os.path.exists(path):
+                    os.makedirs(path)
+
+                with open(path + "/content.dat", "wb") as file:
+                    for para in content:
+                        file.write((para + "\n").encode())
+
+                with open(path + "/tags.dat", "wb") as file:
+                    for tag in tags:
+                        file.write((tag + "\n").encode())
+
                     return {"status" : 11, "description" : "save successful"}
+            else:
+                return {"status" : 13, "description" : "unknown error"}
+        else:
+                return {"status" : 13, "description" : "unknown error"}
+
+    except:
+        return {"status" : 13, "description" : "connect error"}
+
+
+# 用于删除笔记
+# 未完成
+# param = {username : user, title : title}
+@app.route("/delnote", methods=["DELETE"])
+def deleteNote():
+    global user_list
+    try:
+        if request.method == "DELETE":
+            user = request.args.get("username", "")
+            title = request.json.get("title", "")
+
+            if user == "" or title == "":
+                return {"status" : 15, "description" : "insufficient input"}
+            if user not in user_list:
+                return {"status" : 14, "description" : "not logged in"}
+            
+            info = User.deleteNote(username=user, title=title)
+
+            if info["status"] == User.UKNOWN_ERROR:
+                return {"status" : 13, "description" : "unknown error"}
+            elif info["status"] == User.EXIST_ERROR:
+                return {"status" : 13, "description" : "exist error"}
+            elif info["status"] == User.NULL_INPUT_ERROR:
+                return {"status" : 15, "description" : "insufficient input"}
+            elif info["status"] == User.NO_ERROR:
+                # 更新本地存储
+                path = info["path"]
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+
+                    return {"status" : 11, "description" : "delete successful"}
                 else:
                     return {"status" : 13, "description" : "unknown error"}
             else:
@@ -178,19 +226,11 @@ def save():
         return {"status" : 13, "description" : "connect error"}
 
 
-# 用于删除笔记
-# 未完成
-# param = {username : user, title : ""}
-@app.route("/delnote", methods=["POST"])
-def deleteNote():
-    pass
-
-
 
 # 用于更新用户信息
 # 未完成
 # param = {username : user}
-# data
+# json = {nickname : nickname, profile : profile}
 @app.route("/upduser", methods=["POST"])
 def updateUser():
     # request.form["profile"]
