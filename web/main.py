@@ -4,7 +4,7 @@ from flask import request
 
 import os
 import sys
-import json
+import base64
 import shutil
 import hashlib
 
@@ -32,18 +32,19 @@ data_path = ""
 # 一个测试接口
 @app.route("/test", methods=["GET", "POST"])
 def test():
-    return  request.json
+    return "connect successful"
 
 
 # 用于用户登录
-# params = {username : user, password : pwd}
+# params = {username : user}
+# json = {password : pwd}
 @app.route("/login", methods=["GET"])
 def login():
     global user_list
     try:
         if request.method == "GET":
             user = request.args.get("username", "")
-            pwd = request.args.get("password", "")
+            pwd = request.json.get("password", "")
             
             if user == "" or pwd == "":
                 return {"status" : 15, "description" : "insufficient input"}
@@ -84,31 +85,34 @@ def logout():
         if request.method == "POST":
             user = request.args.get("username", "")
         
-        if user == "":
+            if user == "":
                 return {"status" : 15, "description" : "insufficient input"}
-        
-        if user in user_list:
-            user_list.remove(user)
-            return {"status" : 11, "description" : "logout successful"}
-        else:
-            return {"status" : 14, "description" : "not logged in"}
+            
+            if user in user_list:
+                user_list.remove(user)
+                return {"status" : 11, "description" : "logout successful"}
+            else:
+                return {"status" : 14, "description" : "not logged in"}
     except:
         return {"status" : 13, "description" : "connect error"}
     
 
 # 用于用户注册
-# params = {username : user, password : pwd}
+# params = {username : user}
+# json = {password : pwd}
 @app.route("/register", methods=["POST"])
 def register():
     try:
         if request.method == "POST":
             user = request.args.get("username", "")
-            pwd = request.args.get("password", "")
+            pwd = request.json.get("password", "")
 
             salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
             hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest()
 
-            code = User.register(user=user, pwd=hash_pwd, path=data_path)
+            nickname = base64.b64encode(user.encode()).decode()
+
+            code = User.register(user=user, pwd=hash_pwd, nickname=nickname, path=data_path)
 
             if code == User.UKNOWN_ERROR:
                 return {"status" : 13, "description" : "unknown error"}
@@ -227,13 +231,49 @@ def deleteNote():
 
 
 # 用于更新用户信息
-# 未完成
 # param = {username : user}
-# json = {nickname : nickname, profile : profile}
+# json = {(可选)nickname : nickname, (可选)profile : profile, (可选)password : pwd}
 @app.route("/upduser", methods=["POST"])
 def updateUser():
-    # request.form["profile"]
-    pass
+    global user_list
+    try:
+        if request.method == "POST":
+            user = request.args.get("username", "")
+            nickname = request.json.get("nickname", "")
+            profile = request.json.get("profile", "")
+            pwd = request.json.get("password", "")
+
+            if user == "":
+                return {"status" : 15, "description" : "insufficient input"}
+            if user not in user_list:
+                return {"status" : 14, "description" : "not logged in"}
+            
+            salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
+            hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest()
+            
+            info = User.updateInfo(username=user, nickname=nickname, password=hash_pwd)
+
+            if info["status"] == User.UKNOWN_ERROR:
+                return {"status" : 13, "description" : "unknown error"}
+            elif info["status"] == User.NULL_INPUT_ERROR:
+                return {"status" : 15, "description" : "insufficient input"}
+            elif info["status"] == User.NO_ERROR:
+                # 更新本地存储
+                if profile != "":
+                    path = info["path"]
+
+                    if os.path.exists(path):
+                        with open(path, "wb") as file:
+                            file.write(profile)
+
+                return {"status" : 11, "description" : "update successful"}
+            else:
+                return {"status" : 13, "description" : "unknown error"}
+        else:
+                return {"status" : 13, "description" : "unknown error"}
+
+    except:
+        return {"status" : 13, "description" : "connect error"}
 
 
 # 用于删除用户

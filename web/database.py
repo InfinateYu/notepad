@@ -44,7 +44,7 @@ def login(user: str, pwd: str) -> int:
 
 
 # 用户注册
-def register(user: str, pwd: str, path: str) -> int:
+def register(user: str, pwd: str, nickname: str, path: str) -> int:
     code = UKNOWN_ERROR
 
     # 先处理空白输入
@@ -63,7 +63,7 @@ def register(user: str, pwd: str, path: str) -> int:
         else:
             try:
                 reg = "INSERT INTO users \
-                        VALUES (\"" + user + "\", \"" + pwd + "\", \"" + user + "\", \"" + path + "user_" + user +"\")" 
+                        VALUES (\"" + user + "\", \"" + pwd + "\", \"" + nickname + "\", \"" + path + "user_" + user +"\")" 
                 cursor.execute(reg)
                 db.commit()
 
@@ -125,7 +125,7 @@ def getInfo(username: str) -> dict:
 
     # 先处理空白输入
     if username == "":
-        return NULL_INPUT_ERROR
+        return {"status" : NULL_INPUT_ERROR, "nickname" : nickname, "profile" : profile}
     
     # 从数据库获取数据
     db = MySQLdb.connect("localhost", "root", "1234567890", "notepad", charset="utf8")
@@ -157,9 +157,49 @@ def getInfo(username: str) -> dict:
         return {"status" : code, "nickname" : nickname, "profile" : profile}
     
 
-# 更新用户信息（昵称）
-def updateInfo(username: str, nickname: str) -> dict:
-    pass
+# 更新用户信息（昵称，密码等）
+def updateInfo(username: str, nickname: str = "", password: str = "") -> dict:
+    code = UKNOWN_ERROR
+
+    res_file = ""
+
+    # 先处理空白输入
+    if username == "":
+        return {"status" : NULL_INPUT_ERROR, "path" : res_file}
+    
+    # 从数据库获取数据
+    db = MySQLdb.connect("localhost", "root", "1234567890", "notepad", charset="utf8")
+    cursor = db.cursor()
+    try:
+        # 执行sql语句
+        judge_username = "SELECT * FROM users WHERE username = \"" + username + "\""
+        cursor.execute(judge_username)
+        result = cursor.fetchone()
+
+        if result == None:
+            code = UKNOWN_ERROR
+        else:
+            # 更新密码
+            if password != "":
+                upd_pwd = "UPDATE users SET password = \"" + password + "\""
+                cursor.execute(upd_pwd)
+                db.commit()
+
+            # 更新昵称
+            if nickname != "":
+                upd_nkn = "UPDATE users SET nickname = \"" + nickname + "\""
+                cursor.execute(upd_nkn)
+                db.commit()
+
+            # 获取路径
+            path = result[3]
+            res_file = path + "/profile/profile.dat"
+            code = NO_ERROR
+    except:
+        db.rollback()
+    finally:
+        db.close()
+        return {"status" : code, "path" : res_file}
 
 
 # 获取所有笔记

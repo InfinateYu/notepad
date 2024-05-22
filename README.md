@@ -34,3 +34,6 @@ class MediaParagraph extends Paragraph // 文本段落
     Media media // java可能会有相应的音频类？（音频控件主题外观应该要写）
     // TODO（样式设定待定）
 ```
+
+**2024.5.22 update**
+- 后端部分v1.0完成
