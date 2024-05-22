@@ -29,6 +29,7 @@ data_path = ""
 # 14状态错误 15缺少输入（注册）
 # 16已存在用户名 17注册成功
 
+
 # 一个测试接口
 @app.route("/test", methods=["GET", "POST"])
 def test():
@@ -191,7 +192,8 @@ def save():
 
 
 # 用于删除笔记
-# param = {username : user, title : title}
+# param = {username : user}
+#json = {title : title}
 @app.route("/delnote", methods=["DELETE"])
 def deleteNote():
     global user_list
