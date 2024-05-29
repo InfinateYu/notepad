@@ -28,10 +28,12 @@ public class ExampleInstrumentedTest {
 
     @Test
     public void testAccountManager() {
-        System.out.println(1);
         AccountManager manager = new AccountManager();
         manager.set("user", "123");
-        System.out.println(manager.test());
-        System.out.println(2);
+        new Thread(() -> {
+            System.out.println(1);
+            System.out.println(manager.test());
+        }).start();
+
     }
 }

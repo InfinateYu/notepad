@@ -29,22 +29,20 @@ data_path = ""
 # 14状态错误 15缺少输入（注册）
 # 16已存在用户名 17注册成功
 
-
 # 一个测试接口
 @app.route("/test", methods=["GET", "POST"])
 def test():
-    return "connect successful"
+    return "connect success"
 
 
 # 用于用户登录
-# params = {username : user}
-# json = {password : pwd}
-@app.route("/login", methods=["GET"])
+# json = {username : user, password : pwd}
+@app.route("/login", methods=["POST"])
 def login():
     global user_list
     try:
-        if request.method == "GET":
-            user = request.args.get("username", "")
+        if request.method == "POST":
+            user = request.json.get("username", "")
             pwd = request.json.get("password", "")
             
             if user == "" or pwd == "":
@@ -78,13 +76,13 @@ def login():
 
 
 # 退出登录
-# param = {username : user}
+# json = {username : user}
 @app.route("/logout", methods=["POST"])
 def logout():
     global user_list
     try:
         if request.method == "POST":
-            user = request.args.get("username", "")
+            user = request.json.get("username", "")
         
             if user == "":
                 return {"status" : 15, "description" : "insufficient input"}
@@ -99,13 +97,12 @@ def logout():
     
 
 # 用于用户注册
-# params = {username : user}
-# json = {password : pwd}
+# json = {username : user, password : pwd}
 @app.route("/register", methods=["POST"])
 def register():
     try:
         if request.method == "POST":
-            user = request.args.get("username", "")
+            user = request.json.get("username", "")
             pwd = request.json.get("password", "")
 
             salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
@@ -140,14 +137,13 @@ def register():
 
 
 # 用于笔记保存
-# param = {username : user}
-# json = {title : title, (可选)new_title : new_title, tags : [tags], content : [content]}
+# json = {username : user, title : title, (可选)new_title : new_title, tags : [tags], content : [content]}
 @app.route("/save", methods=["POST"])
 def save():
     global user_list
     try:
         if request.method == "POST":
-            user = request.args.get("username", "")
+            user = request.json.get("username", "")
             title = request.json.get("title", "")
             new_title = request.json.get("new_title", "")
             tags = request.json.get("tags", [])
@@ -192,14 +188,13 @@ def save():
 
 
 # 用于删除笔记
-# param = {username : user}
-#json = {title : title}
+# json = {username : user, title : title}
 @app.route("/delnote", methods=["DELETE"])
 def deleteNote():
     global user_list
     try:
         if request.method == "DELETE":
-            user = request.args.get("username", "")
+            user = request.json.get("username", "")
             title = request.json.get("title", "")
 
             if user == "" or title == "":
@@ -233,19 +228,18 @@ def deleteNote():
 
 
 # 用于更新用户信息
-# param = {username : user}
-# json = {(可选)nickname : nickname, (可选)profile : profile, (可选)password : pwd}
+# json = {username : user, (可选)nickname : nickname, (可选)profile : profile, (可选)password : pwd}
 @app.route("/upduser", methods=["POST"])
 def updateUser():
     global user_list
     try:
         if request.method == "POST":
-            user = request.args.get("username", "")
+            user = request.json.get("username", "")
             nickname = request.json.get("nickname", "")
             profile = request.json.get("profile", "")
             pwd = request.json.get("password", "")
 
-            if user == "":
+            if user == "" or (nickname == "" and profile == "" and pwd == ""):
                 return {"status" : 15, "description" : "insufficient input"}
             if user not in user_list:
                 return {"status" : 14, "description" : "not logged in"}
@@ -279,14 +273,14 @@ def updateUser():
 
 
 # 用于删除用户
-# param = {username : user}
+# json = {username : user}
 @app.route("/deluser", methods=["DELETE"])
 def deleteUser():
     # 需要删除数据库记录和本地的库
     global user_list
     try:
         if request.method == "DELETE":
-            user = request.args.get("username", "")
+            user = request.json.get("username", "")
             
             if user in user_list:
                 code = User.deleteUser(username=user)
