@@ -186,6 +186,43 @@ public class AccountManager {
         }
     }
 
+    /** 更新用户信息
+     * @param nickname 用户昵称（可选，由于Java不支持缺省写法，为降低代码量，当不需要修改昵称时，该参数使用空字符串""）
+     * @param profile 用户简介（可选，由于Java不支持缺省写法，为降低代码量，当不需要修改简介时，该参数使用空字符串""）
+     * @param new_password 新密码（可选，由于Java不支持缺省写法，为降低代码量，当不需要修改密码时，该参数使用空字符串""，但是三个参数不能同时缺省）
+     * @return 返回一个int，为状态码。成功与否可以通过状态码判断
+    */
+    public final int updateUser(String nickname, String profile, String new_password) {
+        try {
+            if (username.isEmpty() || password.isEmpty()) {
+                throw new IOException();
+            }
+
+            if (logged == false) {
+                throw new RuntimeException();
+            }
+
+            String url = database_url + "update";
+            JSONObject json_object = new JSONObject();
+            json_object.put("username", username);
+            json_object.put("password", password);
+            json_object.put("nickname", nickname);
+            json_object.put("profile", profile);
+
+            String json = JSON.toJSONString(json_object);
+            HttpURLConnection connection = getHttpURLConnection(url, json, "POST");
+
+            // 解析返回的json
+            JSONObject object = JSON.parseObject(ret_json);
+            int code = object.getIntValue("status");
+            return code;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return 13;
+        }
+    }
+    
     /** 保存单篇笔记
      * @param title 笔记标题（加密前）
      * @param tags 笔记标签（加密前）
@@ -204,6 +241,30 @@ public class AccountManager {
             }
 
             String url = database_url + "save";
+            // TODO
+
+            return 0;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return 13;
+        }
+    }
+
+    /** 删除单篇笔记
+     * @return 返回一个int，为状态码。成功与否可以通过状态码判断
+    */
+    public final int deleteNote() {
+        try {
+            if (username.isEmpty() || password.isEmpty()) {
+                throw new IOException();
+            }
+
+            if (logged == false) {
+                throw new RuntimeException();
+            }
+
+            String url = database_url + "delete";
             // TODO
 
             return 0;
