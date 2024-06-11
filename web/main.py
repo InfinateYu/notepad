@@ -1,9 +1,11 @@
 # web主程序
 from flask import Flask
 from flask import request
+from waitress import serve
 
 import os
 import sys
+import json
 import base64
 import shutil
 import hashlib
@@ -307,4 +309,18 @@ def deleteUser():
 
 if __name__ == '__main__':
     data_path = sys.argv[0].replace("main.py", "data/").replace("\\", "/")
-    app.run(debug=True, host="0.0.0.0")
+    json_path = sys.argv[0].replace("main.py", "host.json").replace("\\", "/")
+
+    try:
+        # 加载host信息
+        with open(json_path, "rb") as file:
+            print(1)
+            js = json.load(file)
+            if "host" in js.keys() and "port" in js.keys():
+                host = js.get("host", "0.0.0.0")
+                port = js.get("port", 5000)
+                serve(app=app, host=host, port=port)
+            else:
+                raise Exception("信息错误")
+    except:
+        serve(app=app, host="0.0.0.0", port=5000)
