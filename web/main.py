@@ -11,6 +11,7 @@ import shutil
 import hashlib
 
 import database as User
+import api_html as api
 
 app = Flask(__name__)
 
@@ -34,7 +35,13 @@ data_path = ""
 # 一个测试接口
 @app.route("/test", methods=["GET", "POST"])
 def test():
-    return "connect success"
+    return "connect successful"
+
+
+# 获取所有接口
+@app.route("/getapi", methods=["GET"])
+def getApi():
+    return api.html
 
 
 # 用于用户登录
