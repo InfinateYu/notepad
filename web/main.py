@@ -191,11 +191,11 @@ def save():
 
 # 用于删除笔记
 # json = {username : user, title : title}
-@app.route("/delnote", methods=["DELETE"])
+@app.route("/delnote", methods=["POST"])
 def deleteNote():
     global user_list
     try:
-        if request.method == "DELETE":
+        if request.method == "POST":
             user = request.json.get("username", "")
             title = request.json.get("title", "")
 
@@ -276,12 +276,12 @@ def updateUser():
 
 # 用于删除用户
 # json = {username : user}
-@app.route("/deluser", methods=["DELETE"])
+@app.route("/deluser", methods=["POST"])
 def deleteUser():
     # 需要删除数据库记录和本地的库
     global user_list
     try:
-        if request.method == "DELETE":
+        if request.method == "POST":
             user = request.json.get("username", "")
             
             if user in user_list:
@@ -314,7 +314,6 @@ if __name__ == '__main__':
     try:
         # 加载host信息
         with open(json_path, "rb") as file:
-            print(1)
             js = json.load(file)
             if "host" in js.keys() and "port" in js.keys():
                 host = js.get("host", "0.0.0.0")

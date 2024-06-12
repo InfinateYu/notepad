@@ -1,7 +1,5 @@
 package account;
 
-import androidx.annotation.NonNull;
-
 import com.alibaba.fastjson2.*;
 
 import java.util.Set;
@@ -24,6 +22,8 @@ import java.lang.Thread;
 /** 用于和后端交互的类。该类不保存用户的笔记头像等信息，需要在其他地方处理保存
  * @author 雨相羽
 */
+import androidx.annotation.NonNull;
+
 public class AccountManager {
     private String username;
     private String password;
@@ -43,34 +43,6 @@ public class AccountManager {
         // 使用base64简单加密
         this.username = username;
         this.password = Base64.getEncoder().encodeToString(password.getBytes());
-    }
-
-    // 测试接口
-    public final String test() {
-        try {
-            if (username.isEmpty() || password.isEmpty()) {
-                throw new IOException();
-            }
-
-            String url = "http://192.168.132.129:5000/test?username=" + username;
-            JSONObject json_object = new JSONObject();
-            List<String> ls = Arrays.asList("abc", "avsaa", "1rfw");
-            json_object.put("password", password);
-            json_object.put("notes", ls);
-
-
-            String json = JSON.toJSONString(json_object);
-            HttpURLConnection connection = getHttpURLConnection(url, json, "POST");
-
-            // int responseCode = connection.getResponseCode();
-            String ret_json = getReturnJson(connection);
-
-            connection.disconnect();
-            return ret_json;
-        }
-        catch(Exception e) {
-            return "error";
-        }
     }
 
     /** 创建账户
@@ -186,6 +158,37 @@ public class AccountManager {
         }
     }
 
+    /** 删除账户
+     * @return 返回一个int，为状态码。成功与否可以通过状态码判断
+    */
+    public final int delUser() {
+        try {
+            if (username.isEmpty() || password.isEmpty()) {
+                throw new IOException();
+            }
+
+            if (logged == false) {
+                throw new RuntimeException();
+            }
+
+            String url = database_url + "deluser";
+            JSONObject json_object = new JSONObject();
+            json_object.put("username", username);
+
+            String json = JSON.toJSONString(json_object);
+            HttpURLConnection connection = getHttpURLConnection(url, json, "POST");
+
+            // 解析返回的json
+            JSONObject object = JSON.parseObject(ret_json);
+            int code = object.getIntValue("status");
+            return code;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return 13;
+        }
+    }
+
     /** 更新用户信息
      * @param nickname 用户昵称（可选，由于Java不支持缺省写法，为降低代码量，当不需要修改昵称时，该参数使用空字符串""）
      * @param profile 用户简介（可选，由于Java不支持缺省写法，为降低代码量，当不需要修改简介时，该参数使用空字符串""）
@@ -224,10 +227,10 @@ public class AccountManager {
     }
     
     /** 保存单篇笔记
-     * @param title 笔记标题（加密前）
-     * @param tags 笔记标签（加密前）
-     * @param content 笔记内容（加密前）
-     * @param new_title 新的笔记标题（加密前，可选，由于Java不支持缺省写法，为降低代码量，当不需要修改标题时，该参数使用空字符串""）
+     * @param title 笔记标题（加密后）
+     * @param tags 笔记标签（加密后）
+     * @param content 笔记内容（加密后）
+     * @param new_title 新的笔记标题（加密后，可选，由于Java不支持缺省写法，为降低代码量，当不需要修改标题时，该参数使用空字符串""）
      * @return 返回一个int，为状态码。成功与否可以通过状态码判断
     */
     public final int saveNote(String title, List<> tags, List<> content, String new_title){
@@ -241,9 +244,20 @@ public class AccountManager {
             }
 
             String url = database_url + "save";
-            // TODO
+            JSONObject json_object = new JSONObject();
+            json_object.put("username", username);
+            json_object.put("title", title)
+            json_object.put("new_title", new_title);
+            json_object.put("tags", tags);
+            json_object.put("content", content);
 
-            return 0;
+            String json = JSON.toJSONString(json_object);
+            HttpURLConnection connection = getHttpURLConnection(url, json, "POST");
+            
+            // 解析返回的json
+            JSONObject object = JSON.parseObject(ret_json);
+            int code = object.getIntValue("status");
+            return code;
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -252,9 +266,10 @@ public class AccountManager {
     }
 
     /** 删除单篇笔记
+     * @param title 笔记标题（加密后）
      * @return 返回一个int，为状态码。成功与否可以通过状态码判断
     */
-    public final int deleteNote() {
+    public final int deleteNote(String title) {
         try {
             if (username.isEmpty() || password.isEmpty()) {
                 throw new IOException();
@@ -264,10 +279,19 @@ public class AccountManager {
                 throw new RuntimeException();
             }
 
-            String url = database_url + "delete";
-            // TODO
+            String url = database_url + "delnote";
+            
+            JSONObject json_object = new JSONObject();
+            json_object.put("username", username);
+            json_object.put("title", title);
 
-            return 0;
+            String json = JSON.toJSONString(json_object);
+            HttpURLConnection connection = getHttpURLConnection(url, json, "POST");
+
+            // 解析返回的json
+            JSONObject object = JSON.parseObject(ret_json);
+            int code = object.getIntValue("status");
+            return code;
         }
         catch (Exception e) {
             e.printStackTrace();
