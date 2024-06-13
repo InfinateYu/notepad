@@ -326,7 +326,8 @@ if __name__ == '__main__':
                 host = js.get("host", "0.0.0.0")
                 port = js.get("port", 5000)
                 serve(app=app, host=host, port=port)
-            else:
+            else:  
                 raise Exception("信息错误")
     except:
+        print("start error, use default host")
         serve(app=app, host="0.0.0.0", port=5000)

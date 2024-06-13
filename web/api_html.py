@@ -21,7 +21,7 @@ html = """<!DOCTYPE html>
                     <li>允许的请求方法：POST</li>
                     <li>url参数：无</li>
                     <li>json参数：{username : String, password : String}</li>
-                    <li>说明：用户注册，返回状态码和对应</li>
+                    <li>说明：用户注册，返回状态码</li>
                 </ul>
             </li>
             <li>/login
