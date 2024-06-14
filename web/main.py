@@ -11,9 +11,8 @@ import shutil
 import hashlib
 
 import database as User
-import api_html as api
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="")
 
 user_list = []
 
@@ -41,7 +40,18 @@ def test():
 # 获取所有接口
 @app.route("/getapi", methods=["GET"])
 def getApi():
-    return api.html
+    return app.send_static_file("html/getapi.html")
+
+
+# 奇怪页面一览
+@app.route("/spe", methods=["GET"])
+def spe():
+    return app.send_static_file("html/spe.html")
+
+# api: kobe
+@app.route("/kobe", methods=["GET"])
+def kobe():
+    return app.send_static_file("html/kobe.html")
 
 
 # 用于用户登录
