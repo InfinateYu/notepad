@@ -34,23 +34,27 @@ data_path = ""
 # 一个测试接口
 @app.route("/test", methods=["GET", "POST"])
 def test():
+    print("Request: test")
     return "connect successful"
 
 
 # 获取所有接口
 @app.route("/getapi", methods=["GET"])
 def getApi():
+    print("Request: getapi")
     return app.send_static_file("html/getapi.html")
 
 
 # 奇怪页面一览
 @app.route("/spe", methods=["GET"])
 def spe():
+    print("Request: spe")
     return app.send_static_file("html/spe.html")
 
 # api: kobe
 @app.route("/kobe", methods=["GET"])
 def kobe():
+    print("Request: kobe")
     return app.send_static_file("html/kobe.html")
 
 
@@ -60,6 +64,7 @@ def kobe():
 def login():
     global user_list
     try:
+        print("Request: login")
         if request.method == "POST":
             user = request.json.get("username", "")
             pwd = request.json.get("password", "")
@@ -100,6 +105,7 @@ def login():
 def logout():
     global user_list
     try:
+        print("Request: logout")
         if request.method == "POST":
             user = request.json.get("username", "")
         
@@ -120,6 +126,7 @@ def logout():
 @app.route("/register", methods=["POST"])
 def register():
     try:
+        print("Request: register")
         if request.method == "POST":
             user = request.json.get("username", "")
             pwd = request.json.get("password", "")
@@ -163,6 +170,7 @@ def register():
 def save():
     global user_list
     try:
+        print("Request: save")
         if request.method == "POST":
             user = request.json.get("username", "")
             title = request.json.get("title", "")
@@ -214,6 +222,7 @@ def save():
 def deleteNote():
     global user_list
     try:
+        print("Request: delnote")
         if request.method == "POST":
             user = request.json.get("username", "")
             title = request.json.get("title", "")
@@ -254,6 +263,7 @@ def deleteNote():
 def updateUser():
     global user_list
     try:
+        print("Request: upduser")
         if request.method == "POST":
             user = request.json.get("username", "")
             nickname = request.json.get("nickname", "")
@@ -301,6 +311,7 @@ def deleteUser():
     # 需要删除数据库记录和本地的库
     global user_list
     try:
+        print("Request: deluser")
         if request.method == "POST":
             user = request.json.get("username", "")
             

@@ -10,8 +10,6 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
-import account.AccountManager;
-
 /**
  * Instrumented test, which will execute on an Android device.
  *
@@ -26,14 +24,5 @@ public class ExampleInstrumentedTest {
         assertEquals("com.example.notepad", appContext.getPackageName());
     }
 
-    @Test
-    public void testAccountManager() {
-        AccountManager manager = new AccountManager();
-        manager.set("user", "123");
-        new Thread(() -> {
-            System.out.println(1);
-            System.out.println(manager.test());
-        }).start();
 
-    }
 }
