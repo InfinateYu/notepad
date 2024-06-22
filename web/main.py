@@ -84,7 +84,7 @@ def login():
                 info = User.getInfo(user)
                 notes = User.getNotes(user)
                 if info["status"] == User.NO_ERROR and notes["status"] == User.NO_ERROR:
-                    return {"status" : 11, "description" : "login successful", "nickname" : info["nickname"], "profile" : info["profile"], "notes" : notes["notes"]}
+                    return {"status" : 11, "description" : "login successful", "nickname" : info["nickname"], "signature" : info["signature"], "profile" : info["profile"], "notes" : notes["notes"]}
                 else:
                     return {"status" : 13, "description" : "unknown error"}
         else:
@@ -126,10 +126,12 @@ def register():
 
             salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
             hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest()
-
+            
             nickname = base64.b64encode(user.encode()).decode()
+            sig = "写一写自己想说的话"
+            signature = base64.b64encode(sig.encode()).decode()
 
-            code = User.register(user=user, pwd=hash_pwd, nickname=nickname, path=data_path)
+            code = User.register(user=user, pwd=hash_pwd, nickname=nickname, signature=signature, path=data_path)
 
             if code == User.UKNOWN_ERROR:
                 return {"status" : 13, "description" : "unknown error"}
@@ -247,7 +249,7 @@ def deleteNote():
 
 
 # 用于更新用户信息
-# json = {username : user, (可选)nickname : nickname, (可选)profile : profile, (可选)password : pwd}
+# json = {username : user, (可选)nickname : nickname, (可选)signature : signature, (可选)profile : profile, (可选)password : pwd}
 @app.route("/upduser", methods=["POST"])
 def updateUser():
     global user_list
@@ -255,6 +257,7 @@ def updateUser():
         if request.method == "POST":
             user = request.json.get("username", "")
             nickname = request.json.get("nickname", "")
+            signature = request.json.get("signature", "")
             profile = request.json.get("profile", "")
             pwd = request.json.get("password", "")
 
@@ -266,7 +269,7 @@ def updateUser():
             salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
             hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest()
             
-            info = User.updateInfo(username=user, nickname=nickname, password=hash_pwd)
+            info = User.updateInfo(username=user, nickname=nickname, password=hash_pwd, signature=signature)
 
             if info["status"] == User.UKNOWN_ERROR:
                 return {"status" : 13, "description" : "unknown error"}

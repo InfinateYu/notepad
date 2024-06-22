@@ -44,7 +44,7 @@ def login(user: str, pwd: str) -> int:
 
 
 # 用户注册
-def register(user: str, pwd: str, nickname: str, path: str) -> int:
+def register(user: str, pwd: str, nickname: str, signature: str, path: str) -> int:
     code = UKNOWN_ERROR
 
     # 先处理空白输入
@@ -63,7 +63,7 @@ def register(user: str, pwd: str, nickname: str, path: str) -> int:
         else:
             try:
                 reg = "INSERT INTO users \
-                        VALUES (\"" + user + "\", \"" + pwd + "\", \"" + nickname + "\", \"" + path + "user_" + user +"\")" 
+                        VALUES (\"" + user + "\", \"" + pwd + "\", \"" + nickname + "\", \"" + signature + "\", \"" + path + "user_" + user +"\")" 
                 cursor.execute(reg)
                 db.commit()
 
@@ -122,6 +122,7 @@ def getInfo(username: str) -> dict:
 
     nickname = ""
     profile = ""
+    signature = ""
 
     # 先处理空白输入
     if username == "":
@@ -141,9 +142,10 @@ def getInfo(username: str) -> dict:
         else:
             # 昵称
             nickname = result[2]
-
+            # 个签
+            signature = result[3]
             # 获取路径
-            path = result[3]
+            path = result[4]
             res_file = path + "/profile/profile.dat"
 
             with open(res_file, "r") as file:
@@ -154,11 +156,11 @@ def getInfo(username: str) -> dict:
         db.rollback()
     finally:
         db.close()
-        return {"status" : code, "nickname" : nickname, "profile" : profile}
+        return {"status" : code, "nickname" : nickname, "signature" : signature, "profile" : profile}
     
 
 # 更新用户信息（昵称，密码等）
-def updateInfo(username: str, nickname: str = "", password: str = "") -> dict:
+def updateInfo(username: str, nickname: str = "", password: str = "", signature: str = "") -> dict:
     code = UKNOWN_ERROR
 
     res_file = ""
@@ -189,6 +191,12 @@ def updateInfo(username: str, nickname: str = "", password: str = "") -> dict:
             if nickname != "":
                 upd_nkn = "UPDATE users SET nickname = \"" + nickname + "\""
                 cursor.execute(upd_nkn)
+                db.commit()
+
+            # 更新个签
+            if signature != "":
+                upd_sig = "UPDATE users SET signature = \"" + signature + "\""
+                cursor.execute(upd_sig)
                 db.commit()
 
             # 获取路径
@@ -224,7 +232,7 @@ def getNotes(username: str) -> dict:
             code = UKNOWN_ERROR
         else:
             # 先获取路径
-            path = result[3]
+            path = result[4]
 
             # 执行sql语句
             note_titles = "SELECT * FROM " + username + "_notes;"

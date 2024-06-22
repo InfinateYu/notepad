@@ -4,5 +4,6 @@ CREATE TABLE users(
 username VARCHAR(255),
 password CHARACTER(64),
 nickname VARCHAR(255),
+signature VARCHAR(255),
 filepath VARCHAR(255)
 );

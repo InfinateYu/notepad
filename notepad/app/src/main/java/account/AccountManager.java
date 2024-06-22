@@ -113,7 +113,9 @@ public class AccountManager {
             map.put("status", code);
             if (code == 11) {
                 logged = true;
+                map.put("username", object.getString("username"));
                 map.put("nickname", object.getString("nickname"));
+                map.put("signature", object.getString("signature"));
                 map.put("profile", object.getString("profile"));
                 map.put("notes", JSON.parseArray(object.getJSONArray("notes").toJSONString(), String.class));
             }
@@ -191,11 +193,12 @@ public class AccountManager {
 
     /** 更新用户信息
      * @param nickname 用户昵称（可选，由于Java不支持缺省写法，为降低代码量，当不需要修改昵称时，该参数使用空字符串""）
+     * @param signature 个性签名（可选，由于Java不支持缺省写法，为降低代码量，当不需要修改个签时，该参数使用空字符串""）
      * @param profile 用户简介（可选，由于Java不支持缺省写法，为降低代码量，当不需要修改简介时，该参数使用空字符串""）
      * @param new_password 新密码（可选，由于Java不支持缺省写法，为降低代码量，当不需要修改密码时，该参数使用空字符串""，但是三个参数不能同时缺省）
      * @return 返回一个int，为状态码。成功与否可以通过状态码判断
     */
-    public final int updateUser(String nickname, String profile, String new_password) {
+    public final int updateUser(String nickname, String signature, String profile, String new_password) {
         try {
             if (username.isEmpty() || password.isEmpty()) {
                 throw new IOException();
@@ -209,6 +212,7 @@ public class AccountManager {
             JSONObject json_object = new JSONObject();
             json_object.put("username", username);
             json_object.put("password", password);
+            json_object.put("signature", signature);
             json_object.put("nickname", nickname);
             json_object.put("profile", profile);
 
