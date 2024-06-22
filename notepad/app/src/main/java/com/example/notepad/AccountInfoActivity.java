@@ -22,16 +22,23 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.CopyOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
+import account.AccountManager;
 
 public class AccountInfoActivity extends AppCompatActivity {
-
+    private AccountManager manager;
+    int code;
     private ListView listView;
     private AccountInfoAdapter adapter;
     private List<ListItem> itemList;
@@ -55,6 +62,8 @@ public class AccountInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account_info);
 
+        manager = new AccountManager();
+        code = 0;
         // 获取用户昵称和个性签名
         username = getUsername();
         signature = getSignature();
@@ -217,6 +226,24 @@ public class AccountInfoActivity extends AppCompatActivity {
     }
 
     private void saveAvatarFilePath(String avatarFilePath) {
+        try (FileInputStream fileInputStream = new FileInputStream(avatarFilePath)) {
+            int len = fileInputStream.available();
+            byte[] data = new byte[len];
+            fileInputStream.read(data);
+            String profile = Arrays.toString(Base64.getEncoder().encode(data));
+
+            // 和数据库连接
+            final CountDownLatch downLatch = new CountDownLatch(1);
+            // 验证输入的账号和密码是否与保存的一致
+            new Thread(() -> {
+                code = manager.updateUser(username, "", "", profile, "");
+                downLatch.countDown();
+            }).start();
+            downLatch.await();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         String path = getFilesDir().getAbsolutePath() + File.separator +  "avatar" + File.separator + "avatar.jpg";
         File file = new File(path);
         if (!file.exists()) {
