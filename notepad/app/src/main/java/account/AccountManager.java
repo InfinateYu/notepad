@@ -1,30 +1,24 @@
 package account;
 
-import com.alibaba.fastjson2.*;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Objects;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Arrays;
-
-import java.net.URL;
-import java.net.HttpURLConnection;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import java.lang.Thread;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /** 用于和后端交互的类。该类不保存用户的笔记头像等信息，需要在其他地方处理保存
  * @author 雨相羽
 */
-import androidx.annotation.NonNull;
 
 public class AccountManager {
     private static final String database_url = "http://103.40.13.87:30907/"; // 前缀

@@ -1,17 +1,37 @@
 package com.example.notepad;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.ImageButton;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.List;
 
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder> {
 
     private List<Note> noteList;
+    private OnNoteClickListener onNoteClickListener;
+    private OnNoteDeleteListener onNoteDeleteListener;
+    public void setOnNoteDeleteListener(OnNoteDeleteListener listener) {
+        this.onNoteDeleteListener = listener;
+    }
+
+    public interface OnNoteDeleteListener {
+        void onNoteDelete(int position);
+    }
+
+    public interface OnNoteClickListener {
+        void onNoteClick(Note note);
+    }
+
+    public void setOnNoteClickListener(OnNoteClickListener listener) {
+        this.onNoteClickListener = listener;
+    }
 
     public NoteAdapter(List<Note> noteList) {
         this.noteList = noteList;
@@ -27,38 +47,13 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     @Override
     public void onBindViewHolder(@NonNull NoteViewHolder holder, int position) {
         Note note = noteList.get(position);
-        holder.titleTextView.setText(note.getTitle());
-        holder.timeTextView.setText(note.getTime());
+        holder.bind(note, onNoteClickListener);
 
-        // 设置删除按钮的点击监听器
         holder.deleteButton.setOnClickListener(v -> {
-            removeNoteAt(position);
-        });
-
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // 在这里处理点击笔记的逻辑,比如打开笔记编辑页面
-                // handleNoteClick(note);
+            if (onNoteDeleteListener != null) {
+                onNoteDeleteListener.onNoteDelete(position);
             }
         });
-    }
-
-//    @Override
-//    private void handleNoteClick(Note note) {
-//        // 在这里编写点击笔记时的处理逻辑
-//        // 比如打开笔记编辑页面
-//        Intent intent = new Intent(v.getContext(), NoteEditActivity.class);
-//        intent.putExtra("note", note);
-//        v.getContext().startActivity(intent);
-//    }
-
-
-    // 删除指定位置的笔记
-    private void removeNoteAt(int position) {
-        noteList.remove(position);
-        notifyItemRemoved(position);
-        notifyItemRangeChanged(position, noteList.size());
     }
 
     @Override
@@ -66,18 +61,54 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         return noteList.size();
     }
 
-    public static class NoteViewHolder extends RecyclerView.ViewHolder {
+    public static class NoteViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView titleTextView;
         TextView timeTextView;
-        ImageButton deleteButton; // 添加删除按钮
-
-
+        ImageButton deleteButton;
+        TextView tagTextView;
+        private Note note;
+        private OnNoteClickListener onNoteClickListener;
 
         public NoteViewHolder(@NonNull View itemView) {
             super(itemView);
             titleTextView = itemView.findViewById(R.id.note_title);
             timeTextView = itemView.findViewById(R.id.note_time);
-            deleteButton = itemView.findViewById(R.id.delete_button); // 初始化删除按钮
+            deleteButton = itemView.findViewById(R.id.delete_button);
+            tagTextView = itemView.findViewById(R.id.note_tag);
+            itemView.setOnClickListener(this);
+        }
+
+        public void bind(Note note, OnNoteClickListener listener) {
+            this.note = note;
+            this.onNoteClickListener = listener;
+            titleTextView.setText(note.getTitle());
+            timeTextView.setText(note.getTime());
+
+            if (note.getTags() == "" || note.getTags() == null) {
+                tagTextView.setText("No Tags");
+            } else {
+                tagTextView.setText(note.getTags());
+            }
+
+            // 设置删除按钮的点击监听器
+            deleteButton.setOnClickListener(v -> {
+                if (onNoteClickListener != null) {
+                    onNoteClickListener.onNoteClick(note);
+                }
+            });
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (onNoteClickListener != null) {
+                onNoteClickListener.onNoteClick(note);
+            }
         }
     }
+    public void updateNoteList(List<Note> newNoteList) {
+        this.noteList = newNoteList;
+        notifyDataSetChanged();
+    }
+
+
 }

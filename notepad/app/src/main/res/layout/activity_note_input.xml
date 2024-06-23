@@ -5,102 +5,138 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".NoteInputActivity">
+    <include
+        android:id="@+id/add_tag_dialog"
+        layout="@layout/dialog_add_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Top Toolbar with Cancel and Save buttons -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar_top"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <Button
             android:id="@+id/cancel_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="取消"
+            android:layout_gravity="start"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:textColor="@android:color/white"
-            android:layout_gravity="start" />
+            android:text="取消"
+            android:textColor="@android:color/white" />
 
         <Button
             android:id="@+id/save_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="确定"
+            android:layout_gravity="end"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:textColor="@android:color/white"
-            android:layout_gravity="end" />
+            android:text="确定"
+            android:textColor="@android:color/white" />
 
     </androidx.appcompat.widget.Toolbar>
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar_add_tag"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/design_default_color_secondary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_top">
+
+        <Button
+            android:id="@+id/add_tag_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:text="添加标签"
+            android:textColor="@android:color/white" />
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <TextView
+        android:id="@+id/tag_count_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="标签数量: 0"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_add_tag"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp" />
 
     <EditText
         android:id="@+id/title_edit_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         android:hint="标题"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_top"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="16dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_add_tag" />
 
-    <EditText
-        android:id="@+id/body_edit_text"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/note_input_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:hint="正文"
-        app:layout_constraintTop_toBottomOf="@id/title_edit_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/toolbar_bottom"
         android:layout_margin="16dp"
-        android:gravity="top"
-        android:minLines="10" />
+        android:background="@drawable/rounded_rectangle_border"
+        app:layout_constraintBottom_toTopOf="@id/toolbar_bottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_edit_text" />
 
-    <!-- Bottom Toolbar with Keyboard, Image, and Audio buttons -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar_bottom"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <ImageButton
             android:id="@+id/keyboard_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_edit"
+            android:layout_gravity="start"
+            android:layout_marginLeft="50dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="键盘"
-            app:tint="@android:color/white"
-            android:layout_marginLeft="50dp"
-            android:layout_gravity="start" />
+            android:src="@android:drawable/ic_menu_edit"
+            app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/image_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_gallery"
+            android:layout_gravity="center"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="图片"
-            app:tint="@android:color/white"
-
-            android:layout_gravity="center" />
+            android:src="@android:drawable/ic_menu_gallery"
+            app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/audio_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_btn_speak_now"
+            android:layout_gravity="end"
+            android:layout_marginRight="50dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="录音"
-            app:tint="@android:color/white"
-            android:layout_marginRight="50dp"
-            android:layout_gravity="end" />
+            android:src="@android:drawable/ic_btn_speak_now"
+            app:tint="@android:color/white" />
 
     </androidx.appcompat.widget.Toolbar>
 

@@ -1,39 +1,61 @@
 package com.example.notepad;
 
-
 import java.util.List;
 
 public class Note {
     private String title;
-    private String body;
     private String time;
-    private List<String> tags;
+    private String content;
+    private String imagePaths;
+    private String tags;
 
-    // Constructors, getters, and setters
-
-    public Note(String title, String body, String time) {
+    public Note(String title, String content, String time,  String imagePaths) {
         this.title = title;
-        this.body = body;
         this.time = time;
+        this.content = content;
+        this.imagePaths = imagePaths;
+    }
+    public Note(String title, String content, String time, String tags, String imagePaths) {
+        this.title = title;
+        this.time = time;
+        this.content = content;
+        this.tags = tags;
+        this.imagePaths = imagePaths;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public String getBody() {
-        return body;
-    }
-
     public String getTime() {
         return time;
     }
 
-    public List<String> getTags() {
-        return tags;
+    public String getContent() {
+        return content;
     }
 
-    public void setTags(List<String> tags) {
+    public String getImagePaths() {
+        return imagePaths;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setImagePaths(String imagePaths) {this.imagePaths = imagePaths;}
+    public String getTags() {return tags;}
+    public void setTags(String tags) {
         this.tags = tags;
     }
+
+    public String getBody() { return content;    }
 }
