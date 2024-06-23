@@ -271,16 +271,14 @@ def updateUser():
             profile = request.json.get("profile", "")
             pwd = request.json.get("password", "")
 
-            if user == "" or (nickname == "" and profile == "" and pwd == ""):
+            if user == "" or (nickname == "" and profile == "" and pwd == "" and signature == ""):
                 return {"status" : 15, "description" : "insufficient input"}
-            if user not in user_list:
-                return {"status" : 14, "description" : "not logged in"}
             
             salt = hashlib.md5(pwd[::-1].encode()).hexdigest()
-            hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest()
+            hash_pwd = hashlib.sha256((pwd + salt).encode()).hexdigest() if pwd != "" else ""
             
             info = User.updateInfo(username=user, nickname=nickname, password=hash_pwd, signature=signature)
-
+            
             if info["status"] == User.UKNOWN_ERROR:
                 return {"status" : 13, "description" : "unknown error"}
             elif info["status"] == User.NULL_INPUT_ERROR:
@@ -291,7 +289,7 @@ def updateUser():
                     path = info["path"]
 
                     if os.path.exists(path):
-                        with open(path, "wb") as file:
+                        with open(path, "w") as file:
                             file.write(profile)
 
                 return {"status" : 11, "description" : "update successful"}

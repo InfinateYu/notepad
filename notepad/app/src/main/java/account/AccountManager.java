@@ -2,6 +2,9 @@ package account;
 
 import com.alibaba.fastjson2.*;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
@@ -183,13 +186,22 @@ public class AccountManager {
                 throw new IOException();
             }
 
-            String url = database_url + "update";
+            String url = database_url + "upduser";
             JSONObject json_object = new JSONObject();
             json_object.put("username", username);
-            json_object.put("password", new_password);
-            json_object.put("signature", signature);
-            json_object.put("nickname", nickname);
-            json_object.put("profile", profile);
+
+            if (!signature.isEmpty()) {
+                json_object.put("signature", Base64.getEncoder().encodeToString(signature.getBytes(StandardCharsets.UTF_8)));
+            }
+            if (!nickname.isEmpty()) {
+                json_object.put("nickname", Base64.getEncoder().encodeToString(nickname.getBytes(StandardCharsets.UTF_8)));
+            }
+            if (!profile.isEmpty()) {
+                json_object.put("profile", profile);
+            }
+            if (!new_password.isEmpty()) {
+                json_object.put("password", new_password);
+            }
 
             String json = JSON.toJSONString(json_object);
             HttpURLConnection connection = getHttpURLConnection(url, json, "POST");

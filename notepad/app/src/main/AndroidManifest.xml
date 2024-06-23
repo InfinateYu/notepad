@@ -21,7 +21,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Notepad"
         tools:targetApi="31"
-        android:allowClearUserData="true"/>
+        android:allowClearUserData="true"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true">

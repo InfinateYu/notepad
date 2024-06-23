@@ -183,24 +183,24 @@ def updateInfo(username: str, nickname: str = "", password: str = "", signature:
         else:
             # 更新密码
             if password != "":
-                upd_pwd = "UPDATE users SET password = \"" + password + "\""
+                upd_pwd = "UPDATE users SET password = \"" + password + "\" WHERE username = \"" + username + "\""
                 cursor.execute(upd_pwd)
                 db.commit()
 
             # 更新昵称
             if nickname != "":
-                upd_nkn = "UPDATE users SET nickname = \"" + nickname + "\""
+                upd_nkn = "UPDATE users SET nickname = \"" + nickname + "\" WHERE username = \"" + username + "\""
                 cursor.execute(upd_nkn)
                 db.commit()
 
             # 更新个签
             if signature != "":
-                upd_sig = "UPDATE users SET signature = \"" + signature + "\""
+                upd_sig = "UPDATE users SET signature = \"" + signature + "\" WHERE username = \"" + username + "\""
                 cursor.execute(upd_sig)
                 db.commit()
 
             # 获取路径
-            path = result[3]
+            path = result[4]
             res_file = path + "/profile/profile.dat"
             code = NO_ERROR
     except:
@@ -292,7 +292,7 @@ def deleteNote(username: str, title: str) -> dict:
         if result != None: 
             note_lib = username + "_notes"
             # 获取路径
-            path = result[3]
+            path = result[4]
 
             # 执行sql语句（获取文件信息）
             find_note = "SELECT * FROM " + note_lib + " WHERE title = \"" + title + "\""
@@ -339,7 +339,7 @@ def saveNote(username: str, title: str, new_title: str = "") -> dict:
         if result != None: 
             note_lib = username + "_notes"
             # 获取路径
-            path = result[3]
+            path = result[4]
 
             # 执行sql语句（获取文件信息）
             find_note = "SELECT * FROM " + note_lib + " WHERE title = \"" + title + "\""

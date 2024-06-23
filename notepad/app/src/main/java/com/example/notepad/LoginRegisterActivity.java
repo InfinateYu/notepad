@@ -14,6 +14,8 @@ import android.app.AlertDialog;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -203,14 +205,17 @@ public class LoginRegisterActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // 把昵称、个签处理一下
+        String nkname = new String(Base64.getDecoder().decode(nickname), StandardCharsets.UTF_8);
+        String sig = new String(Base64.getDecoder().decode(signature), StandardCharsets.UTF_8);
         // 然后再写信息
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(KEY_USERNAME, username);
         editor.putString(KEY_PASSWORD, password);
-        editor.putString(KEY_NICKNAME, nickname);
+        editor.putString(KEY_NICKNAME, nkname);
         editor.putString(KEY_AVATAR, path);
-        editor.putString(KEY_SIGNATURE, signature);
+        editor.putString(KEY_SIGNATURE, sig);
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
         editor.apply();
     }

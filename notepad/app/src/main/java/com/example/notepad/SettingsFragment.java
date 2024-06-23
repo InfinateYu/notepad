@@ -1,6 +1,7 @@
 package com.example.notepad;
 
 import android.app.AlertDialog;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -72,8 +76,16 @@ public class SettingsFragment extends Fragment {
 
         boolean isLoggedIn = getLoggedInState();
         if (isLoggedIn) {
-            textViewUsername.setText(username);
-            imageViewAvatar.setImageResource(R.drawable.default_avatar);
+            textViewUsername.setText(getNickname());
+            textViewSignature.setText(getUserSignature());
+            try {
+                Uri img = getUserAvatar();
+                imageViewAvatar.setImageURI(img);
+            } catch (Exception e) {
+                imageViewAvatar.setImageResource(R.drawable.default_avatar);
+                e.printStackTrace();
+            }
+
             itemList.add(new ListItem("修改账号信息", true, false));
             itemList.add(new ListItem("修改密码", true, false));
             itemList.add(new ListItem("退出登录", true, false));
@@ -109,7 +121,7 @@ public class SettingsFragment extends Fragment {
                     setLoggedInState(false);
 
                     // 先处理本地数据
-                    SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
+                    SharedPreferences sharedPreferences = requireContext().getSharedPreferences(SHARED_PREFS_NAME, requireContext().MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     String username = sharedPreferences.getString(KEY_USERNAME, "");
                     editor.putBoolean(KEY_IS_LOGGED_IN, false);
@@ -127,15 +139,13 @@ public class SettingsFragment extends Fragment {
                             downLatch.countDown();
                         }).start();
                         downLatch.await();
-                        if (code == 11) {
-                            setUsername("");
-                            textViewUsername.setText("未登录");
-                            textViewSignature.setText("");
-                            imageViewAvatar.setImageResource(R.drawable.default_avatar);
-                            itemList.clear();
-                            itemList.add(new ListItem("登录/注册", true, false));
-                            adapter.notifyDataSetChanged();
-                        }
+                        setUsername("");
+                        textViewUsername.setText("未登录");
+                        textViewSignature.setText("");
+                        imageViewAvatar.setImageResource(R.drawable.default_avatar);
+                        itemList.clear();
+                        itemList.add(new ListItem("登录/注册", true, false));
+                        adapter.notifyDataSetChanged();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -143,6 +153,7 @@ public class SettingsFragment extends Fragment {
                     // 跳转到修改账号界面
                     Intent intent = new Intent(getContext(), AccountInfoActivity.class);
                     startActivity(intent);
+                    refreshUserInfo();
                 } else if (text.equals("修改密码")) {
                     // 跳转到修改密码界面
                     Intent intent = new Intent(getContext(), ChangePasswordActivity.class);
@@ -158,6 +169,11 @@ public class SettingsFragment extends Fragment {
     private String getUsername() {
         SharedPreferences sharedPreferences = requireContext().getSharedPreferences(SHARED_PREFS_NAME, requireContext().MODE_PRIVATE);
         return sharedPreferences.getString(KEY_USERNAME, "");
+    }
+
+    private String getNickname() {
+        SharedPreferences sharedPreferences = requireContext().getSharedPreferences(SHARED_PREFS_NAME, requireContext().MODE_PRIVATE);
+        return sharedPreferences.getString(KEY_NICKNAME, "");
     }
 
     private boolean getLoggedInState() {
@@ -190,10 +206,14 @@ public class SettingsFragment extends Fragment {
         editor.putString(KEY_SIGNATURE, signature);
         editor.apply();
     }
-    private int getUserAvatar() {
+    private Uri getUserAvatar() throws Exception {
         SharedPreferences sharedPreferences = requireContext().getSharedPreferences(SHARED_PREFS_NAME, requireContext().MODE_PRIVATE);
-        int avatarResId = sharedPreferences.getInt(KEY_AVATAR, R.drawable.default_avatar);
-        return avatarResId;
+        String path = sharedPreferences.getString(KEY_AVATAR, "");
+        if (path.isEmpty()) {
+            throw new Exception();
+        }
+        Uri avatar = Uri.fromFile(new File(path));
+        return avatar;
     }
 
     private void setUserAvatar(int avatarResId) {
@@ -203,13 +223,21 @@ public class SettingsFragment extends Fragment {
         editor.apply();
     }
     private void refreshUserInfo() {
-        String username = getUsername();
-        String signature = getUserSignature();
         boolean isLoggedIn = getLoggedInState();
         if (isLoggedIn) {
-            textViewUsername.setText(username);
-            textViewSignature.setText(signature);
-            imageViewAvatar.setImageResource(R.drawable.default_avatar);
+            textViewUsername.setText(getNickname());
+            textViewSignature.setText(getUserSignature());
+            try {
+                imageViewAvatar.setImageURI(null);
+                Uri img = getUserAvatar();
+                imageViewAvatar.setImageURI(img);
+            } catch (Exception e) {
+                imageViewAvatar.setImageResource(R.drawable.default_avatar);
+                e.printStackTrace();
+            }
+            finally {
+                imageViewAvatar.invalidate();
+            }
             itemList.clear();
             itemList.add(new ListItem("修改账号信息", true, false));
             itemList.add(new ListItem("修改密码", true, false));
@@ -223,6 +251,5 @@ public class SettingsFragment extends Fragment {
         }
         adapter.notifyDataSetChanged();
     }
-
 
 }

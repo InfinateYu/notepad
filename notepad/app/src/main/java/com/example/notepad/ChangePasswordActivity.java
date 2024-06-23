@@ -57,7 +57,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
                 try {
                     final CountDownLatch downLatch = new CountDownLatch(1);
                     new Thread(() -> {
-                        code = manager.updateUser(username, "", "", "", password);
+                        code = manager.updateUser(username, "", "", "", newPassword);
                         downLatch.countDown();
                     }).start();
                     downLatch.await();

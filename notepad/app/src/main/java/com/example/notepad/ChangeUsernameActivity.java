@@ -20,7 +20,7 @@ public class ChangeUsernameActivity extends AppCompatActivity {
     int code;
     private static final String SHARED_PREFS_NAME = "user_info";
     private static final String KEY_USERNAME = "username";
-
+    private static final String KEY_NICKNAME = "nickname";
     private TextView textViewCurrentUsername;
     private EditText editTextNewUsername;
     private Button buttonCancel, buttonConfirm;
@@ -30,6 +30,8 @@ public class ChangeUsernameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_username);
 
+        manager = new AccountManager();
+        code = 0;
         // 初始化控件
         textViewCurrentUsername = findViewById(R.id.text_view_current_username);
         editTextNewUsername = findViewById(R.id.edit_text_new_username);
@@ -38,7 +40,7 @@ public class ChangeUsernameActivity extends AppCompatActivity {
 
         // 获取当前用户名并显示
         String currentUsername = getUsername();
-        textViewCurrentUsername.setText("当前昵称: " + currentUsername);
+        textViewCurrentUsername.setText("当前昵称: " + getNickname());
 
         // 设置"取消"按钮的点击事件
         buttonCancel.setOnClickListener(new View.OnClickListener() {
@@ -93,10 +95,15 @@ public class ChangeUsernameActivity extends AppCompatActivity {
         return sharedPreferences.getString(KEY_USERNAME, "");
     }
 
+    private String getNickname() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
+        return sharedPreferences.getString(KEY_NICKNAME, "");
+    }
+
     private void setUsername(String username) {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(KEY_USERNAME, username);
+        editor.putString(KEY_NICKNAME, username);
         editor.apply();
     }
 

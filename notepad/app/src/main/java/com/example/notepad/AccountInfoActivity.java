@@ -141,7 +141,6 @@ public class AccountInfoActivity extends AppCompatActivity {
             String avatarFilePath = saveAvatarToInternalStorage(bitmap);
 
             // 更新列表项中的头像
-            itemList.get(0).setIconResId(R.drawable.custom_avatar);
             adapter.notifyDataSetChanged();
 
             // 保存头像文件路径到 SharedPreferences
@@ -196,7 +195,7 @@ public class AccountInfoActivity extends AppCompatActivity {
     private String saveAvatarToInternalStorage(Bitmap bitmap) {
         try {
             File internalStorageDir = getFilesDir();
-            File avatarFile = new File(internalStorageDir, AVATAR_FILE_NAME);
+            File avatarFile = new File(internalStorageDir + File.separator + "avatar" + File.separator + "avatar.jpg" );
             FileOutputStream outputStream = new FileOutputStream(avatarFile);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
             outputStream.flush();
@@ -230,11 +229,10 @@ public class AccountInfoActivity extends AppCompatActivity {
             int len = fileInputStream.available();
             byte[] data = new byte[len];
             fileInputStream.read(data);
-            String profile = Arrays.toString(Base64.getEncoder().encode(data));
+            String profile = Base64.getEncoder().encodeToString(data);
 
             // 和数据库连接
             final CountDownLatch downLatch = new CountDownLatch(1);
-            // 验证输入的账号和密码是否与保存的一致
             new Thread(() -> {
                 code = manager.updateUser(username, "", "", profile, "");
                 downLatch.countDown();
